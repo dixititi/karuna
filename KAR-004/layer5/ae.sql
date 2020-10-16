@@ -47,8 +47,7 @@ WITH included_subjects AS (
 					   ae."AEBDSYCD":: int AS aebdsycd,
 					   ae."AESOC" ::text AS aesoc,
 					   ae."AESOCCD":: int AS aesoccd,
-					   --ROW_NUMBER () OVER (PARTITION BY ae."STUDYID", ae."SITENUMBER", ae."SUBJECT" ORDER BY ae."AESTDAT") as aeseq,
-					   
+					  					   
 					   CASE WHEN lower("AEACN")='other' THEN ae."AEACN"||ae."AEACNOTH" 					     
 					   else ae."AEACN" END::text AS aeacn
 		        FROM kar004_sdtm."AE" ae ) ae_sub

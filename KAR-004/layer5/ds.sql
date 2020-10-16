@@ -55,33 +55,31 @@ union all
 
 --Disposition Event: Enrollment
 
-SELECT  dm."STUDYID"::text AS studyid,
+SELECT  ds."STUDYID"::text AS studyid,
 reverse(SUBSTRING(reverse("USUBJID"),5,3))::text AS siteid,
-dm."USUBJID"::text AS usubjid,
+ds."USUBJID"::text AS usubjid,
 3.0::NUMERIC AS dsseq, 
 'Enrollment'::text AS dscat,
 'Enrolled'::text AS dsterm,   
---dm."DSSTDTC"::DATE AS dsstdtc,  
-"DMDTC"::DATE AS dsstdtc,
+ds."DSSTDTC"::DATE AS dsstdtc,  
 'Enrolled'::text AS dsscat 
-from kar004_sdtm."DM" dm
---where "DSTERM" = 'RANDOMIZED'
+from kar004_sdtm."DS" ds
+where "DSTERM" = 'RANDOMIZED'
 
 union all 
 
 --Disposition Event: Randomized
 
-SELECT  dm."STUDYID"::text AS studyid,
+SELECT  ds."STUDYID"::text AS studyid,
 reverse(SUBSTRING(reverse("USUBJID"),5,3))::text AS siteid,
-dm."USUBJID"::text AS usubjid,
+ds."USUBJID"::text AS usubjid,
 4.0::NUMERIC AS dsseq, 
 'Randomization'::text AS dscat,
 'Randomized'::text AS dsterm,   
---dm."DSSTDTC"::DATE AS dsstdtc, 
-"DMDTC"::DATE AS dsstdtc,
+ds."DSSTDTC"::DATE AS dsstdtc, 
 'Randomized'::text AS dsscat 
-from kar004_sdtm."DM" dm
---where "DSTERM" = 'RANDOMIZED'
+from kar004_sdtm."DS" ds
+where "DSTERM" = 'RANDOMIZED'
 
 union all 
 

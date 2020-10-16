@@ -7,18 +7,8 @@ select
 	distinct studyid,
 	siteid,
 	usubjid
-from
-	(
-	select
-		"STUDYID"::text as studyid,
-		"SITEID":: text as siteid,
-		"USUBJID":: text as usubjid,
-		null::text as screenid,
-		null::text as randid,
-		null::text as status,
-		null::date as exitdate
-	from
-		kar004_sdtm."DM") subject),
+from subject),
+
 vs_data as (
 select
 	studyid,
@@ -44,7 +34,7 @@ select
 	from (
 		select vs."STUDYID"::text as studyid,
 		reverse(substring(reverse("USUBJID"), 5, 3))::text as siteid,
-		right("USUBJID", 3)::text as usubjid,
+		"USUBJID"::text as usubjid,
 		null::int as vsseq,
 		"VSTESTCD"::text as vstestcd,
 		"VSTEST"::text as vstest,
