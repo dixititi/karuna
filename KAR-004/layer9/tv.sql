@@ -9,14 +9,28 @@ WITH included_studies AS (
 
 tv_scheduled AS (
 
-	SELECT visit_number     as      visitnum, visit, visitdy , window_before_visit_day as "visitwindowbefore", window_after_visit_day as "visitwindowafter"
-            FROM tv_internal.tv_tracker_list where studyid='TAS120-201'
-	
+SELECT 'KAR-004' as studyid, '99999' as visitnum, 'Visit 1' as visit, 99 as visitdy , 0 as  "visitwindowbefore", 0 as "visitwindowafter"
+union all
+select 'KAR-004' as studyid,'2' as visitnum, 'Visit 2' as visit, 1 as visitdy , 1 as  "visitwindowbefore", 0 as "visitwindowafter"
+union all
+select 'KAR-004' as studyid,'3' as visitnum, 'Visit 3' as visit, 3 as visitdy , 3 as  "visitwindowbefore", 1 as "visitwindowafter"
+union all
+select 'KAR-004' as studyid,'4' as visitnum, 'Visit 4' as visit, 3 as visitdy , 7 as  "visitwindowbefore", 2 as "visitwindowafter"
+union all
+select 'KAR-004' as studyid,'5' as visitnum, 'Visit 5' as visit, 3 as visitdy , 8 as  "visitwindowbefore", 2 as "visitwindowafter"
+union all
+select 'KAR-004' as studyid,'6' as visitnum, 'Visit 6' as visit, 3 as visitdy , 14 as  "visitwindowbefore", 2 as "visitwindowafter"
+union all
+select 'KAR-004' as studyid,'7' as visitnum, 'Visit 7' as visit, 3 as visitdy , 21 as  "visitwindowbefore", 2 as "visitwindowafter"
+union all
+select 'KAR-004' as studyid,'8' as visitnum, 'Visit 8' as visit, 3 as visitdy , 28 as  "visitwindowbefore", 2 as "visitwindowafter"
+union all
+select 'KAR-004' as studyid,'9' as visitnum, 'Visit 9' as visit, 3 as visitdy , 35 as  "visitwindowbefore", 0 as "visitwindowafter"
 ),
 
 tv_data AS (
 	SELECT
-		'TAS120_201'::text AS studyid,
+		'KAR-004'::text AS studyid,
 		coalesce(visitnum,'99')::numeric AS visitnum,
 		visit::text AS visit,
 		visitdy::int AS visitdy,
