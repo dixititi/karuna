@@ -10,13 +10,7 @@ WITH included_subjects AS (
      row_number() OVER (PARTITION BY studyid, siteid, usubjid)::int AS ieseq from 	 			
                (SELECT  "STUDYID"::text AS studyid,
                         reverse(SUBSTRING(reverse("USUBJID"),5,3))::text AS siteid,
-						 case 
-                               when "IEORRES" = 'Y' 
-                               then 
-                                     "USUBJID"
-                               else 
-                                      null                        	
-                         end::text  AS usubjid,
+						"USUBJID"::text  AS usubjid,
                         "VISITNUM"::numeric AS visitnum,
                         "VISIT"::text AS visit,
                         "IEDTC"::date AS iedtc,
@@ -24,7 +18,8 @@ WITH included_subjects AS (
                         "IETEST"::text AS ietest,
                         "IECAT"::text AS iecat,
                         null::text AS iescat
-                from kar004_sdtm."IE"	ie	) ie_sub			
+                from kar004_sdtm."IE"	ie
+                 where "IEORRES" = 'Y') ie_sub			
 				)
 				
 SELECT 

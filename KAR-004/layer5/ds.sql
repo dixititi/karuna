@@ -8,6 +8,7 @@ WITH included_subjects AS (
 
 ds_data AS (
 
+
 --Disposition Event: Consented
 
 SELECT  ds."STUDYID"::text AS studyid,
@@ -16,10 +17,11 @@ ds."USUBJID"::text AS usubjid,
 2.0::NUMERIC AS dsseq, 
 'Consent'::text AS dscat,
 'Consented'::text AS dsterm,      
-ds."DSSTDTC"::DATE AS dsstdtc,
+max(ds."DSSTDTC")::DATE AS dsstdtc,
 ds."DSDECOD"::text AS dsscat 
 from kar004_sdtm."DS" ds
 where "DSTERM" = 'INFORMED CONSENT OBTAINED'
+group by 1,2,3,8
 
 union all 
 
@@ -91,10 +93,12 @@ ds."USUBJID"::text AS usubjid,
 5.0::NUMERIC AS dsseq, 
 'Completion'::text AS dscat,
 'Completed'::text AS dsterm,   
-ds."DSSTDTC"::DATE AS dsstdtc,
+max(ds."DSSTDTC")::DATE AS dsstdtc,
 ds."DSDECOD"::text AS dsscat 
 from kar004_sdtm."DS" ds
 where "DSTERM" = 'COMPLETED'
+group by 1, 2, 3, 8
+
 
 union all 
 
@@ -106,10 +110,11 @@ ds."USUBJID"::text AS usubjid,
 4.1::NUMERIC AS dsseq, 
 'Completion'::text AS dscat,
 'Withdrawn'::text AS dsterm,   
-ds."DSSTDTC"::DATE AS dsstdtc,
+max(ds."DSSTDTC")::DATE AS dsstdtc,
 ds."DSDECOD"::text AS dsscat 
 from kar004_sdtm."DS" ds
 where "DSTERM" not in ('INFORMED CONSENT OBTAINED', 'CONSENT WITHDRAWN', 'SCREEN FAILURE', 'COMPLETED')
+group by 1,2,3,8
 
 )
 

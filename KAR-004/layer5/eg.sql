@@ -6,7 +6,10 @@ Notes: Standard mapping to CCDM EG table
 WITH included_subjects AS (
                 SELECT DISTINCT studyid, siteid, usubjid FROM subject),
  eg_data AS 
-(        
+(       select studyid,siteid,usubjid,egtestcd,egtest,egcat,egscat,egpos,egorres,egorresu,egstresn,egstresu,egstat,
+                egloc,egblfl,visit,egdtc,egtm,
+                ROW_NUMBER () OVER (PARTITION BY studyid, siteid, usubjid ) as egseq
+                from ( 
        SELECT "STUDYID"::text AS studyid, 
               reverse(SUBSTRING(reverse("USUBJID"),5,3))::text AS siteid,
 		      "USUBJID"::text AS usubjid,
@@ -33,8 +36,7 @@ WITH included_subjects AS (
                 when length(replace("EGDTC",'T',' '))=16 then concat(replace("EGDTC",'T',' '),':00')
                 end::text AS egtm                
                
-         FROM  kar004_sdtm."EG" 
-          )
+         FROM  kar004_sdtm."EG"  )eg_sub) 
 		  
 SELECT 
        /*KEY (eg.studyid::text || '~' || eg.siteid::text || '~' || eg.usubjid::text) AS comprehendid, KEY*/
