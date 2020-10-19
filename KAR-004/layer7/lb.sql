@@ -1,248 +1,257 @@
 WITH included_subjects AS (
                  SELECT DISTINCT studyid, siteid, usubjid FROM subject),
 
-     lb_data2 AS (
-        SELECT lb.studyid::text AS studyid,
-            lb.siteid::text AS siteid,
-            lb.usubjid::text AS usubjid,
-            lb.visit::text AS visit,
-            lb.lbdtc::timestamp without time zone AS lbdtc,
-            lb.lbdy::integer AS lbdy,
-            (row_number() over (partition by lb.studyid, lb.siteid, lb.usubjid order by lb.lbseq, lb.lbdtc))::int as lbseq,
-            case
-				 when lbtestcd ilike '%Alkaline Phosphatase%' then 'ALP'
-				 when lbtestcd ilike '%Aspartate aminotransferase (AST)%' then 'AST'
-				 when lbtestcd ilike '%Alanine aminotransferase (ALT)%' then 'ALT'
-                 WHEN lbtestcd in ('Total Bilirubin','Bilirubin (Total)') THEN 'BILI'
-				 else lbtestcd
-                 end::text AS lbtestcd,
-            lb.lbtest::text AS lbtest,
-            upper(lb.lbcat)::text AS lbcat,
-            lb.lbscat::text AS lbscat,
-            lb.lbspec::text AS lbspec,
-            lb.lbmethod::text AS lbmethod,
-            lb.lborres::text AS lborres,
-            lb.lbstat::text AS lbstat,
-            lb.lbreasnd::text AS lbreasnd,
-            convert_to_numeric(lb.lbstnrlo::text)::numeric AS lbstnrlo,
-            convert_to_numeric(lb.lbstnrhi::text)::numeric  AS lbstnrhi,
-            lb.lborresu::text AS lborresu,
-            CASE WHEN lb.lborres ~ '^[0-9\.]+$' then nullif(nullif(regexp_replace(lb.lborres , '[^0-9.]*', '', 'g'), ''), '.')::numeric
-                 WHEN (lb.lborres like '%/%') OR (lb.lborres like '%-%') THEN null::numeric
-            END::numeric AS  lbstresn,
-            lb.lbstresu::text AS lbstresu,
-			lb.lbblfl::text AS lbblfl,
-			lb.lbpos::text AS lbpos,
-            lb.lbtm::time without time zone AS lbtm
-         FROM (
-
-               -- DCRA1AT101_COVANCE_LAB
-                SELECT  "STUDYID"::text AS studyid,
-                        "SITEID"::text AS siteid,
-                        "SUBJID"::text AS usubjid,
+     lb_data AS (
+                  SELECT 
+studyid,
+siteid,
+usubjid,
+visit,
+lbdtc,
+lbdy,
+(row_number() over (partition by lb.studyid, lb.siteid, lb.usubjid order by lb.lbtestcd, lb.lbdtc))::int as lbseq,
+lbtestcd,
+lbtest,
+lbcat,
+lbscat,
+lbspec,
+lbmethod,
+lborres,
+lbstat,
+lbreasnd,
+lbstnrlo,
+lbstnrhi,
+lborresu,
+lbstresn,
+lbstresu,
+lbblfl,
+lbnrind,
+lbornrhi,
+lbornrlo,
+lbstresc,
+lbenint,
+lbevlint,
+lblat,
+lblloq,
+lbloc,
+lbpos,
+lbstint,
+lbuloq,
+lbclsig,
+lbtm from (SELECT "STUDYID"::text AS studyid,
+            reverse(SUBSTRING(reverse("USUBJID"),5,3))::text AS siteid,
+            "USUBJID"::text AS usubjid,
+            "VISIT"::text AS visit,
+             to_date(substring("LBDTC",1,10),'yyyy-mm-dd')::date AS lbdtc,
+            "LBDY"::integer AS lbdy,
+            NULL::int AS lbseq,
+            "LBTESTCD" AS lbtestcd,
+            "LBTEST"::text AS lbtest,
+            "LBCAT"::text AS lbcat,
+            null::text AS lbscat,
+            "LBSPEC"::text AS lbspec,
+            "LBMETHOD"::text AS lbmethod,
+            "LBORRES"::text AS lborres,
+            "LBSTAT"::text AS lbstat,
+            "LBREASND"::text AS lbreasnd,
+            "LBSTNRLO"::numeric AS lbstnrlo,
+            "LBSTNRHI"::numeric  AS lbstnrhi,
+            "LBORRESU"::text AS lborresu,
+            "LBSTRESN"::numeric AS  lbstresn,
+            "LBSTRESU"::text AS lbstresu,
+			"LBBLFL"::text AS lbblfl,
+			"LBNRIND"::text AS lbnrind,
+			"LBORNRHI"::text AS lbornrhi,
+			"LBORNRLO"::text AS lbornrlo,
+			"LBSTRESC"::text AS lbstresc,
+			NULL::text AS lbenint,
+			NULL::text AS lbevlint,
+			NULL::text AS lblat,
+			NULL::text AS lblloq,
+			NULL::text AS lbloc,
+			NULL::text AS lbpos,
+			NULL::text AS lbstint,
+			NULL::text AS lbuloq,
+			NULL::text AS lbclsig,
+            case when length("LBDTC")=16 then 
+		    concat(substring("LBDTC",12,5),':00')::text
+			when length("LBDTC")=10 then '00:00:00'::text end AS lbtm
+            from kar004_sdtm."LB"
+			
+			UNION ALL
+			
+			SELECT  "STUDYID"::text AS studyid,
+                        reverse(SUBSTRING(reverse("USUBJID"),5,3))::text AS siteid,
+                        "USUBJID"::text AS usubjid,
                         "VISIT"::text AS visit,
-                        "LBDTM"::timestamp without time zone AS lbdtc,
+                        to_date(substring("QSDTC",1,10),'yyyy-mm-dd')::date as lbdtc,
                         null::integer AS lbdy,
-                        null::text AS lbseq,
-                        "LBTEST"::text AS lbtestcd, 
-						CASE WHEN "BATTRNAM" IN ('URINE MACRO & MICRO PANEL')AND
-						"LBTEST"  in ('Ur pH','Ur Specific Gravity')THEN 'URINE MACRO & MICRO PANEL'
-						when "BATTRNAM" in ( 'CASTS') then 'CASTS' 
-						when "BATTRNAM" in ('CELLULAR ELEMENTS')THEN 'CELLULAR ELEMENTS'
-						else "LBTEST" 
-						end::text as lbtest,
-                       CASE
-						WHEN "BATTRNAM" IN  ('CHEMISTRY PANEL','CHEMISTRY PANEL II','C-REACTIVE PROTEIN','FOLLICLE STIMULATING HORMONE','GFR BY MDRD','THYROID STIMULATING HORMONE'
-						) THEN 'CHEMISTRY'
-						WHEN "BATTRNAM" = 'COAGULATION GROUP' THEN 'COAGULATION'
-						WHEN "BATTRNAM" LIKE 'COMPLEMENT%' THEN 'COMPLEMENT'
-						WHEN "BATTRNAM" IN ('HEMATOLOGY&DIFFERENTIAL PANEL','PLATELETS','ALPHA FETOPROTEIN','RETICULOCYTE COUNT'
-						) THEN 'HEMATOLOGY'
-						WHEN "LBTEST" IN ('Alpha-1-Antitrypsin') THEN 'HEMATOLOGY'
-						WHEN "BATTRNAM" LIKE '%CYTOKINE%' THEN 'CYTOKINE'
-						WHEN "BATTRNAM" IN ('URINE MACRO & MICRO PANEL')AND
-						"LBTEST"  in ('Ur pH','Ur Specific Gravity')THEN 'URINALYSIS'
-						WHEN "BATTRNAM" IN ('CASTS','CELLULAR ELEMENTS')THEN 'URINALYSIS'					
-						else "BATTRNAM"
-						END::text AS lbcat,
-                        "LBTEST"::text AS lbscat,
-                        "LBSPEC"::text AS lbspec,
-                        null::text AS lbmethod,
-                        "RPTRESN"::text AS lborres,
-                        case when "TSTSTAT" = 'X' then 'Not completed'
-						when "TSTSTAT" = 'D' then 'Completed' end
-						::text AS lbstat,
-                        null::text AS lbreasnd,
-                        "SINRLO"::text AS lbstnrlo,
-                        "SINRHI"::text AS lbstnrhi,
-                        "RPTU"::text AS lborresu,
-                        "SIRESN"::text AS lbstresn,
-                        "SIU"::text AS lbstresu,
-						CASE WHEN "VISIT"= 'Baseline/Day -1' and "BATTRNAM" = 'URINE MACRO & MICRO PANEL' and "LBTEST" not in ('Ur pH','Ur Specific Gravity') THEN 1
-						when "VISIT"= 'Dosing/Day 1' THEN 1 ELSE 0 END::text as lbblfl,
-						null::text AS lbpos,
-                        convert_to_timestamp("LBDTM"::text)::time without time zone AS lbtm
-              FROM "dcr_a1at_101_covance_lab"."DCRA1AT101_COVANCE_LAB"
-				 where upper("BATTRNAM") not in (
-						'HEPATITIS PANEL',
-						'HIV 1/2 AG/AB SCREEN',
-						'MISCELLANEOUS ELEMENTS','ALT CHANGE FROM SCREEN','AST CHANGE FROM SCREEN',
-						'T. BILI CHANGE FROM SCREEN','MICROORGANISMS','GLUTAMATE DEHYDROGENASE','CRYSTALS','AST CHANGE FROM BASELINE','ALT CHANGE FROM BASELINE') and upper("LBTEST") not in ('UR BILIRUBIN','DIRECT BILIRUBIN') 
-
-
-                
-                -- qs mapping
-                UNION ALL
-                SELECT  studyid::text AS studyid,
-                        siteid::text AS siteid,
-                        usubjid::text AS usubjid,
-                        visit::text AS visit,
-                        nullif("qsdtc"::text, '')::timestamp without time zone AS lbdtc,
-                        null::integer AS lbdy,
-                        "qsseq"::text AS lbseq,
-                        qstestcd::text AS lbtestcd,
-                        qstest::text AS lbtest,
+                        --"QSSEQ"::int AS lbseq,
+                        NULL::int AS lbseq,
+                        "QSTESTCD"::text AS lbtestcd,
+                        "QSTEST"::text AS lbtest,
                         'QUESTIONNAIRES'::text AS lbcat,
-                        qscat::text AS lbscat,
+                        "QSCAT"::text AS lbscat,
                         null::text AS lbspec,
                         null::text AS lbmethod,
-                        qsorres::text AS lborres,
+                        "QSORRES"::text AS lborres,
                         null::text AS lbstat,
                         null::text AS lbreasnd,
-                        null::text AS lbstnrlo,
-                        null::text AS lbstnrhi,
-                        qsorresu::text AS lborresu,
-                        qsstresn::text AS  lbstresn,
-                        qsstresu::text AS  lbstresu,
-						qsblfl::text As lbblfl,
+                        null::numeric AS lbstnrlo,
+                        null::numeric AS lbstnrhi,
+                        NULL::text AS lborresu,--doubt
+                        "QSSTRESN"::numeric AS  lbstresn,
+                        "QSSTRESC"::text AS  lbstresu, --doubt
+						"QSBLFL"::text As lbblfl,
+						NULL::text AS lbnrind,
+						NULL::text AS lbornrhi,
+						NULL::text AS lbornrlo,
+						NULL::text AS lbstresc,
+						NULL::text AS lbenint,
+						NULL::text AS lbevlint,
+						NULL::text AS lblat,
+						NULL::text AS lblloq,
+						NULL::text AS lbloc,
 						null::text AS lbpos,
-                        null::time without time zone AS lbtm
-                FROM qs
+						NULL::text AS lbstint,
+						NULL::text AS lbuloq,
+						NULL::text AS lbclsig,
+                        null::text AS lbtm
+                FROM kar004_sdtm."QS"
 			    -- vs mapping
                 UNION ALL
-                SELECT  studyid::text AS studyid,
-                        siteid::text AS siteid,
-                        usubjid::text AS usubjid,
-                        visit::text AS visit,
-                        nullif("vsdtc"::text, '')::timestamp without time zone AS lbdtc,
+                SELECT  "STUDYID"::text AS studyid,
+                        reverse(SUBSTRING(reverse("USUBJID"),5,3))::text AS siteid,
+                        "USUBJID"::text AS usubjid,
+                        "VISIT"::text AS visit,
+                        to_date(substring("VSDTC",1,10),'yyyy-mm-dd')::date as lbdtc,
                         null::integer AS lbdy,
-                        "vsseq"::text AS lbseq,
-                        vstestcd::text AS lbtestcd,
-                        vstest::text AS lbtest,
-                        upper(vscat)::text AS lbcat,
+                        --"VSSEQ"::int AS lbseq,
+                        NULL::int AS lbseq,
+                        "VSTESTCD"::text AS lbtestcd,
+                        "VSTEST"::text AS lbtest,
+                        null::text AS lbcat,--doubt
                         'Vital Signs'::text AS lbscat,
                         null::text AS lbspec,
                         null::text AS lbmethod,
-                        vsorres::text AS lborres,
-                        vsstat::text AS lbstat,
+                        "VSORRES"::text AS lborres,
+                        "VSSTAT"::text AS lbstat,
                         null::text AS lbreasnd,
-                        null::text AS lbstnrlo,
-                        null::text AS lbstnrhi,
-                        vsorresu::text AS lborresu,
-                        vsstresn::text AS  lbstresn,
-                        vsstresu::text AS  lbstresu,
-						vsblfl::text AS lbblfl,
-						vspos::text AS lbpos,
-                        vstm::time without time zone AS lbtm
-                FROM vs 
+                        null::numeric AS lbstnrlo,
+                        null::numeric AS lbstnrhi,
+                        "VSORRESU"::text AS lborresu,
+                        "VSSTRESN"::numeric AS  lbstresn,
+                        "VSSTRESU"::text AS  lbstresu,
+						"VSBLFL"::text AS lbblfl,
+						NULL::text AS lbnrind,
+						NULL::text AS lbornrhi,
+						NULL::text AS lbornrlo,
+						NULL::text AS lbstresc,
+						NULL::text AS lbenint,
+						NULL::text AS lbevlint,
+						NULL::text AS lblat,
+						NULL::text AS lblloq,
+						NULL::text AS lbloc,
+						"VSPOS"::text AS lbpos,
+						NULL::text AS lbstint,
+						NULL::text AS lbuloq,
+						NULL::text AS lbclsig,
+                        null::text AS lbtm --doubt
+                FROM kar004_sdtm."VS"
 				-- EX Data
                 UNION ALL
-                SELECT  studyid::text AS studyid,
-                    siteid::text AS siteid,
-                    usubjid::text AS usubjid,
-                    visit::text AS visit,
-                    exstdtc::timestamp without time zone lbdtc,
+                SELECT  "STUDYID"::text AS studyid,
+                        reverse(SUBSTRING(reverse("USUBJID"),5,3))::text AS siteid,
+                        "USUBJID"::text AS usubjid,
+                        "DOMAIN"::text AS visit,
+                        to_date(substring("EXSTDTC",1,10),'yyyy-mm-dd')::date as lbdtc,
                     null::integer as lbdy,
-                    exseq::text AS lbseq,
+                    --"EXSEQ"::int AS lbseq,
+                    NULL::int AS lbseq,
                    'EXPOSURE'::text AS lbtestcd,
                    'EXPOSURE'::text AS lbtest,
                    'EXPOSURE'::text AS lbcat,
-                    exscat::text AS lbscat,
+                    null::text AS lbscat, --doubt
                     null::text AS lbspec,
                     null::text AS lbmethod,
-                    exdose::text AS lborres,
+                    "EXDOSE"::text AS lborres,
                     null::text AS lbstat,
                     null::text AS lbreasnd,
-                    null::text AS lbstnrlo,
-                    null::text AS lbstnrhi,
-                    exdosu::text AS lborresu,
-                    exdose::text AS lbstresn,
-                    exdosu::text AS lbstresu,
+                    null::numeric AS lbstnrlo,
+                    null::numeric AS lbstnrhi,
+                    "EXDOSU"::text AS lborresu,
+                    "EXDOSE"::numeric AS lbstresn,
+                    "EXDOSU"::text AS lbstresu,
 					null::text AS lbblfl,
+					NULL::text AS lbnrind,
+						NULL::text AS lbornrhi,
+						NULL::text AS lbornrlo,
+						NULL::text AS lbstresc,
+						NULL::text AS lbenint,
+						NULL::text AS lbevlint,
+						NULL::text AS lblat,
+						NULL::text AS lblloq,
+						NULL::text AS lbloc,
 					null::text AS lbpos,
-                    null::time without time zone as lbtm
-                FROM ex
+					NULL::text AS lbstint,
+					NULL::text AS lbuloq,
+					NULL::text AS lbclsig,
+                    null::text as lbtm
+                FROM kar004_sdtm."EX"
 				 -- EG Data
                 UNION ALL
-                select studyid::text AS studyid,
-                    siteid::text AS siteid,
-                    usubjid::text AS usubjid,
-                    visit::text AS visit,
-                    egdtc::timestamp without time zone AS lbdtc,
+                select "STUDYID"::text AS studyid,
+                        reverse(SUBSTRING(reverse("USUBJID"),5,3))::text AS siteid,
+                        "USUBJID"::text AS usubjid,
+                        "VISIT"::text AS visit,
+                        to_date(substring("EGDTC",1,10),'yyyy-mm-dd')::date AS lbdtc,
                     null::integer as lbdy,
-                    egseq::text AS lbseq,
-                    egtestcd::text AS lbtestcd,
-                    egtest::text AS lbtest,
+                    --"EGSEQ"::int AS lbseq,
+                    NULL::int AS lbseq,
+                    "EGTESTCD"::text AS lbtestcd,
+                    "EGTEST"::text AS lbtest,
                     'ECG'::text AS lbcat,
-                    egscat::text AS lbscat,
+                    "EGCAT"::text AS lbscat,
                     null::text AS lbspec,
                     null::text AS lbmethod,
-                    egorres::text AS lborres,
-                    egstat::text AS lbstat,
+                    "EGORRES"::text AS lborres,
+                    "EGSTAT"::text AS lbstat,
                     null::text as lbreasnd,
-                    null::text as lbstnrlo,
-                    null::text as lbstnrhi,
-                    egorresu::text AS lborresu,
-                    egstresn::text AS lbstresn,
-                    egstresu::text AS lbstresu,
-					egblfl ::text As lbblfl,
-					egpos::text AS lbpos,
-                    egtm::time without time zone AS lbtm
-                from eg 
-                ) lb  WHERE  NULLIF(lb.lbtestcd , '')IS NOT NULL  ),
-                
-          lb_data as (     SELECT
-               lb.studyid::text AS studyid,
-        lb.siteid::text AS siteid,
-        lb.usubjid::text AS usubjid,
-        trim(lb.visit)::text AS visit,
-        convert_to_timestamp(concat(lb.lbdtc::date, ' ' , lb.lbtm::time ))::timestamp without time zone AS lbdtc,
-        lb.lbdy::integer AS lbdy,
-        lb.lbseq::integer AS lbseq,
-        trim(lb.lbtestcd)::text AS lbtestcd,
-        trim(lb.lbtest)::text AS lbtest,
-        lb.lbcat::text AS lbcat,
-        lb.lbscat::text AS lbscat,
-        lb.lbspec::text AS lbspec,
-        lb.lbmethod::text AS lbmethod,
-        lb.lborres::text AS lborres,
-        lb.lbstat::text AS lbstat,
-        lb.lbreasnd::text AS lbreasnd,
-        lb.lbstnrlo::numeric AS lbstnrlo,
-        lb.lbstnrhi::numeric  AS lbstnrhi,
-        lb.lborresu::text AS lborresu,
-        lb.lbstresn::numeric AS  lbstresn,
-        lb.lbstresu::text AS lbstresu,
-		lb.lbblfl::text AS lbblfl,
-		lb.lbpos::text AS lbpos,
-        lb.lbtm::time without time zone AS lbtm
-    FROM lb_data2 lb
-   where lb.lbcat  not in ('URINE MACRO & MICRO PANEL'))
+                    null::NUMERIC as lbstnrlo,
+                    null::numeric as lbstnrhi,
+                    "EGORRESU"::text AS lborresu,
+                    "EGSTRESN"::numeric AS lbstresn,
+                    "EGSTRESU"::text AS lbstresu,
+					"EGBLFL" ::text As lbblfl,
+					NULL::text AS lbnrind,
+						NULL::text AS lbornrhi,
+						NULL::text AS lbornrlo,
+						NULL::text AS lbstresc,
+						NULL::text AS lbenint,
+						NULL::text AS lbevlint,
+						NULL::text AS lblat,
+						NULL::text AS lblloq,
+						NULL::text AS lbloc,
+					null::text AS lbpos, --doubt
+					NULL::text AS lbstint,
+					NULL::text AS lbuloq,
+					NULL::text AS lbclsig,
+                    null::text AS lbtm
+                from kar004_sdtm."EG" ) lb
+			
+         )
    
-  
-   
-				
-	SELECT
+SELECT
         /*KEY (lb.studyid || '~' || lb.siteid || '~' || lb.usubjid)::text AS comprehendid, KEY*/
         lb.studyid::text AS studyid,
         lb.siteid::text AS siteid,
         lb.usubjid::text AS usubjid,
-        trim(lb.visit)::text AS visit,
-        convert_to_timestamp(concat(lb.lbdtc::date, ' ' , lb.lbtm::time ))::timestamp without time zone AS lbdtc,
+        lb.visit::text AS visit,
+        lb.lbdtc::date AS lbdtc,
         lb.lbdy::integer AS lbdy,
         lb.lbseq::integer AS lbseq,
-        trim(lb.lbtestcd)::text AS lbtestcd,
-        trim(lb.lbtest)::text AS lbtest,
+        lb.lbtestcd::text AS lbtestcd,
+        lb.lbtest::text AS lbtest,
         lb.lbcat::text AS lbcat,
         lb.lbscat::text AS lbscat,
         lb.lbspec::text AS lbspec,
@@ -251,14 +260,26 @@ WITH included_subjects AS (
         lb.lbstat::text AS lbstat,
         lb.lbreasnd::text AS lbreasnd,
         lb.lbstnrlo::numeric AS lbstnrlo,
-        lb.lbstnrhi::numeric  AS lbstnrhi,
+        lb.lbstnrhi::numeric AS lbstnrhi,
         lb.lborresu::text AS lborresu,
         lb.lbstresn::numeric AS  lbstresn,
-        lb.lbstresu::text AS lbstresu,
-		lb.lbblfl::text AS lbblfl,
-		lb.lbpos::text AS lbpos,
-        lb.lbtm::time without time zone AS lbtm
+        lb.lbstresu::text AS  lbstresu,
+        --lb.lbtm::time without time zone AS lbtm,
+        lb.lbblfl::text AS  lbblfl,
+        lb.lbnrind::text AS  lbnrind,
+        lb.lbornrhi::text AS  lbornrhi,
+        lb.lbornrlo::text AS  lbornrlo,
+        lb.lbstresc::text AS  lbstresc,
+        lb.lbenint::text AS  lbenint,
+        lb.lbevlint::text AS  lbevlint,
+        lb.lblat::text AS  lblat,
+        lb.lblloq::numeric AS  lblloq,
+        lb.lbloc::text AS  lbloc,
+        lb.lbpos::text AS  lbpos,
+        lb.lbstint::text AS  lbstint,
+        lb.lbuloq::numeric AS  lbuloq,
+        lb.lbclsig::text AS  lbclsig
         /*KEY , (lb.studyid || '~' || lb.siteid || '~' || lb.usubjid || '~' || lb.lbseq)::text  AS objectuniquekey KEY*/
-        /*KEY , now()::timestamp without time zone AS comprehend_update_time KEY*/
+        /*KEY , now()::timestamp with time zone AS comprehend_update_time KEY*/
 FROM lb_data lb
 JOIN included_subjects s ON (lb.studyid = s.studyid AND lb.siteid = s.siteid AND lb.usubjid = s.usubjid);
