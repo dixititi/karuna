@@ -26,32 +26,34 @@ SELECT
      exdur
      from
 (SELECT 
-reverse(substring(reverse("USUBJID"),5,3))::text	AS	siteid,
-"USUBJID"::text	AS	usubjid,
-null::INT   AS exseq,
-"STUDYID"::text	AS	studyid,
-substring("EXSTDTC",1,10)::text	AS	visit,
-'EXPOSURE'::text	AS	extrt,
-'EXPOSURE'::text	AS	excat,
-NULL::text	AS	exscat,
-"EXDOSE"::numeric	AS	exdose,
-NULL::text	AS	exdostxt,
-"EXDOSU"::text	AS	exdosu,
-"EXDOSFRM"::text	AS	exdosfrm,
-"EXDOSFRQ"::text	AS	exdosfrq,
-NULL::text	AS	exdostot,
-TO_DATE(substring("EXSTDTC",1,10),'YYYY-MM-DD')::date	AS	exstdtc,
-case when length(replace("EXSTDTC",'T',' '))=10 then concat("EXSTDTC",' 00:00:00')
-     when length(replace("EXSTDTC",'T',' '))=16 then concat(replace("EXSTDTC",'T',' '),':00')
-     end::text AS	exsttm,
-"EXSTDY"::text	AS	exstdy,
-TO_DATE(substring("EXENDTC",1,10),'YYYY-MM-DD')::date	AS	exendtc,
-case when length(replace("EXENDTC",'T',' '))=10 then concat("EXENDTC",' 00:00:00')
-     when length(replace("EXENDTC",'T',' '))=16 then concat(replace("EXENDTC",'T',' '),':00')
-     end::text	AS	exendtm,
-"EXENDY"::text	AS	exendy,
-NULL::text	AS	exdur
-from kar004_sdtm."EX" ) ex
+		reverse(substring(reverse(e."USUBJID"),5,3))::text	AS	siteid,
+		e."USUBJID"::text	AS	usubjid,
+		null::INT   AS exseq,
+		e."STUDYID"::text	AS	studyid,
+		s."VISIT"::text	AS	visit,
+		'EXPOSURE'::text	AS	extrt,
+		'EXPOSURE'::text	AS	excat,
+		NULL::text	AS	exscat,
+		"EXDOSE"::numeric	AS	exdose,
+		NULL::text	AS	exdostxt,
+		"EXDOSU"::text	AS	exdosu,
+		"EXDOSFRM"::text	AS	exdosfrm,
+		"EXDOSFRQ"::text	AS	exdosfrq,
+		NULL::text	AS	exdostot,
+		TO_DATE(substring("EXSTDTC",1,10),'YYYY-MM-DD')::date	AS	exstdtc,
+		case when length(replace("EXSTDTC",'T',' '))=10 then concat("EXSTDTC",' 00:00:00')
+			when length(replace("EXSTDTC",'T',' '))=16 then concat(replace("EXSTDTC",'T',' '),':00')
+			end::text AS	exsttm,
+		"EXSTDY"::text	AS	exstdy,
+		TO_DATE(substring("EXENDTC",1,10),'YYYY-MM-DD')::date	AS	exendtc,
+		case when length(replace("EXENDTC",'T',' '))=10 then concat("EXENDTC",' 00:00:00')
+			when length(replace("EXENDTC",'T',' '))=16 then concat(replace("EXENDTC",'T',' '),':00')
+			end::text	AS	exendtm,
+		"EXENDY"::text	AS	exendy,
+		NULL::text	AS	exdur
+from kar004_sdtm."EX" e
+inner join kar004_sdtm."SV" s
+on e."STUDYID"=s."STUDYID" and e."USUBJID"=s."USUBJID" and e."EXSTDTC"= s."SVSTDTC" ) ex
 )
 
 SELECT
