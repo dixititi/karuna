@@ -113,7 +113,7 @@ ds."USUBJID"::text AS usubjid,
 max(ds."DSSTDTC")::DATE AS dsstdtc,
 ds."DSDECOD"::text AS dsscat 
 from kar004_sdtm."DS" ds
-where "DSTERM" not in ('INFORMED CONSENT OBTAINED', 'CONSENT WITHDRAWN', 'SCREEN FAILURE', 'COMPLETED')
+where "DSTERM" not in ('INFORMED CONSENT OBTAINED', 'CONSENT WITHDRAWN', 'SCREEN FAILURE', 'COMPLETED','RANDOMIZED')
 group by 1,2,3,8
 
 )
