@@ -61,6 +61,19 @@ tv_data AS (
 	FROM formdata 
 	WHERE (studyid, visit) NOT IN (SELECT DISTINCT studyid, visit FROM sv) 
 	AND (studyid, visit) NOT IN (SELECT studyid, visit FROM tv_scheduled)
+	
+	UNION ALL
+
+	SELECT 
+		DISTINCT studyid::text AS studyid,
+		'99'::int AS visitnum,
+		visit::text AS visit,
+		'99999'::int AS visitdy,
+		0::int AS visitwindowbefore,
+		0::int AS visitwindowafter
+	FROM dv 
+	WHERE (studyid, visit) NOT IN (SELECT DISTINCT studyid, visit FROM sv) 
+	AND (studyid, visit) NOT IN (SELECT studyid, visit FROM tv_scheduled)
   
 	
 )
