@@ -61,3 +61,4 @@ SELECT
         /*KEY , now()::timestamp with time zone AS comprehend_update_time KEY*/
 FROM qs_data qs
 JOIN included_subjects s ON (qs.studyid = s.studyid AND qs.siteid = s.siteid AND qs.usubjid = s.usubjid);
+

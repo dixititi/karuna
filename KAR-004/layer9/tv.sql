@@ -11,21 +11,21 @@ tv_scheduled AS (
 
 SELECT 'KAR-004' as studyid, '99999' as visitnum, 'Visit 1' as visit, 99 as visitdy , 0 as  "visitwindowbefore", 0 as "visitwindowafter"
 union all
-select 'KAR-004' as studyid,'2' as visitnum, 'Visit 2' as visit, 1 as visitdy , 1 as  "visitwindowbefore", 0 as "visitwindowafter"
+select 'KAR-004' as studyid,'2' as visitnum, 'Visit 2' as visit, 1 as visitdy , 0 as  "visitwindowbefore", 0 as "visitwindowafter"
 union all
-select 'KAR-004' as studyid,'3' as visitnum, 'Visit 3' as visit, 3 as visitdy , 3 as  "visitwindowbefore", 1 as "visitwindowafter"
+select 'KAR-004' as studyid,'3' as visitnum, 'Visit 3' as visit, 3 as visitdy , 1 as  "visitwindowbefore", 1 as "visitwindowafter"
 union all
-select 'KAR-004' as studyid,'4' as visitnum, 'Visit 4' as visit, 3 as visitdy , 7 as  "visitwindowbefore", 2 as "visitwindowafter"
+select 'KAR-004' as studyid,'4' as visitnum, 'Visit 4' as visit, 7 as visitdy , 2 as  "visitwindowbefore", 2 as "visitwindowafter"
 union all
-select 'KAR-004' as studyid,'5' as visitnum, 'Visit 5' as visit, 3 as visitdy , 8 as  "visitwindowbefore", 2 as "visitwindowafter"
+select 'KAR-004' as studyid,'5' as visitnum, 'Visit 5' as visit, 8 as visitdy , 2 as  "visitwindowbefore", 2 as "visitwindowafter"
 union all
-select 'KAR-004' as studyid,'6' as visitnum, 'Visit 6' as visit, 3 as visitdy , 14 as  "visitwindowbefore", 2 as "visitwindowafter"
+select 'KAR-004' as studyid,'6' as visitnum, 'Visit 6' as visit, 14 as visitdy , 2 as  "visitwindowbefore", 2 as "visitwindowafter"
 union all
-select 'KAR-004' as studyid,'7' as visitnum, 'Visit 7' as visit, 3 as visitdy , 21 as  "visitwindowbefore", 2 as "visitwindowafter"
+select 'KAR-004' as studyid,'7' as visitnum, 'Visit 7' as visit, 21 as visitdy , 2 as  "visitwindowbefore", 2 as "visitwindowafter"
 union all
-select 'KAR-004' as studyid,'8' as visitnum, 'Visit 8' as visit, 3 as visitdy , 28 as  "visitwindowbefore", 2 as "visitwindowafter"
+select 'KAR-004' as studyid,'8' as visitnum, 'Visit 8' as visit, 28 as visitdy , 2 as  "visitwindowbefore", 2 as "visitwindowafter"
 union all
-select 'KAR-004' as studyid,'9' as visitnum, 'Visit 9' as visit, 3 as visitdy , 35 as  "visitwindowbefore", 0 as "visitwindowafter"
+select 'KAR-004' as studyid,'9' as visitnum, 'Visit 9' as visit, 35 as visitdy , 2 as  "visitwindowbefore", 0 as "visitwindowafter"
 ),
 
 tv_data AS (
@@ -90,3 +90,4 @@ SELECT
 	/*KEY , now()::timestamp without time zone AS comprehend_update_time KEY*/
 FROM tv_data tv
 JOIN included_studies st ON (st.studyid = tv.studyid);
+

@@ -82,7 +82,5 @@ select
 	/*KEY , now()::timestamp without time zone AS comprehend_update_time KEY*/
 from
 	vs_data vs
-join included_subjects s on
-	(vs.studyid = s.studyid
-	and vs.siteid = s.siteid
-	and vs.usubjid = s.usubjid);
+join included_subjects s on (vs.studyid = s.studyid and vs.siteid = s.siteid and vs.usubjid = s.usubjid);
+

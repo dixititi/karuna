@@ -130,7 +130,7 @@ lbtm from (SELECT "STUDYID"::text AS studyid,
                         NULL::int AS lbseq,
                         "VSTESTCD"::text AS lbtestcd,
                         "VSTEST"::text AS lbtest,
-                        null::text AS lbcat,--doubt
+                        'Vital Signs'::text AS lbcat,
                         'Vital Signs'::text AS lbscat,
                         null::text AS lbspec,
                         null::text AS lbmethod,

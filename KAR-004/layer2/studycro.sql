@@ -22,3 +22,4 @@ SELECT /*KEY sc.studyid::text AS comprehendid, KEY*/
         /*KEY , now()::timestamp with time zone AS comprehend_update_time KEY*/
 FROM studycro_data sc
 JOIN included_studies st ON (sc.studyid = st.studyid);
+

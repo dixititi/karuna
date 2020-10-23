@@ -86,3 +86,4 @@ SELECT
         /*KEY , now()::timestamp without time zone AS comprehend_update_time KEY*/
 FROM ae_data ae
 JOIN included_subjects s ON (ae.studyid = s.studyid AND ae.siteid = s.siteid AND ae.usubjid = s.usubjid);
+

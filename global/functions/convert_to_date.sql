@@ -18,3 +18,4 @@ EXCEPTION
         RETURN null;
 END
 $$ LANGUAGE plpgsql;
+

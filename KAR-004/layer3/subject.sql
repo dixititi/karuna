@@ -10,7 +10,7 @@ WITH included_sites AS (
     
     subject_data AS (
                 SELECT  "STUDYID"::text AS studyid,
-						"SITEID"::	text AS siteid,
+						reverse(SUBSTRING(reverse("USUBJID"),5,3))::	text AS siteid,
 						"USUBJID"::	text AS usubjid,
                         null::text AS screenid,
                         null::text AS randid, 						

@@ -36,3 +36,4 @@ SELECT
         /*KEY , now()::timestamp with time zone AS comprehend_update_time KEY*/
 FROM study_data s
 WHERE 1=2;
+

@@ -11,7 +11,7 @@ WITH included_studies AS (
     site_data AS (
                 SELECT  DISTINCT "STUDYID"::text AS studyid,
                         RIGHT("SITEID",3)::text AS siteid,
-                        'blank'::text AS sitename,
+                        RIGHT("SITEID",3)::text AS sitename,
                         'Rave'::text AS croid,
                         'Rave'::text AS sitecro,
 						null::text AS siteinvestigatorname,
@@ -55,3 +55,4 @@ SELECT
         /*KEY , now()::timestamp with time zone AS comprehend_update_time KEY*/
 FROM site_data s 
 JOIN included_studies st ON (s.studyid = st.studyid);
+

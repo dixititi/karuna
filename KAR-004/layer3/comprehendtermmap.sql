@@ -82,3 +82,4 @@ SELECT 'studymilestone'::text AS tablename,
        'DATABASE LOCK'::text AS comprehendterm,
        'Database Lock'::text AS originalterm
 FROM included_studies s;
+

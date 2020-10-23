@@ -35,3 +35,4 @@ FROM (SELECT ds.comprehendid, min(ds.dsstdtc) dsstdtc
         AND c.event_state_id IN ('WITHDRAWN', 'COMPLETED')
         GROUP BY ds.comprehendid) ds
 WHERE s.comprehendid = ds.comprehendid;
+
