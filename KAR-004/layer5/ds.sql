@@ -43,14 +43,21 @@ union all
 --Disposition Event: Failed Screen
 
 SELECT  ds."STUDYID"::text AS studyid,
-reverse(SUBSTRING(reverse("USUBJID"),5,3))::text AS siteid,
+reverse(SUBSTRING(reverse(ds."USUBJID"),5,3))::text AS siteid,
 ds."USUBJID"::text AS usubjid,
-2.1::NUMERIC AS dsseq, 
+2.1::NUMERIC AS dsseq,
 'Enrollment'::text AS dscat,
-'Failed Screen'::text AS dsterm,   
+'Failed Screen'::text AS dsterm,  
 ds."DSSTDTC"::DATE AS dsstdtc,
-ds."DSDECOD"::text AS dsscat 
+case when (ie."IECAT" is not null) or (ie."IETESTCD" is not null) then concat(ie."IECAT", '-', ie."IETESTCD")
+end::text AS dsscat
 from kar004_sdtm."DS" ds
+left join(select* from kar004_sdtm."IE"
+where ("USUBJID","IESEQ") in
+(Select "USUBJID", min("IESEQ") as ieseq  
+from  kar004_sdtm."IE" group by 1)) ie
+on ds."STUDYID"=ie."STUDYID"
+and ds."USUBJID"=ie."USUBJID"
 where "DSTERM" = 'SCREEN FAILURE'
   
 union all 
