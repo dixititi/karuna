@@ -87,17 +87,19 @@ union all
 
 --Disposition Event: Study Completion
 
-SELECT  ds."STUDYID"::text AS studyid,
+     SELECT  ds."STUDYID"::text AS studyid,
 reverse(SUBSTRING(reverse("USUBJID"),5,3))::text AS siteid,
 ds."USUBJID"::text AS usubjid,
-5.0::NUMERIC AS dsseq, 
+5.0::NUMERIC AS dsseq,
 'Completion'::text AS dscat,
-'Completed'::text AS dsterm,   
-max(ds."DSSTDTC")::DATE AS dsstdtc,
-ds."DSDECOD"::text AS dsscat 
+'Completed'::text AS dsterm,  
+ds."DSSTDTC"::DATE AS dsstdtc,
+ds."DSDECOD"::text AS dsscat
 from kar004_sdtm."DS" ds
-where "DSTERM" = 'COMPLETED'
-group by 1, 2, 3, 8
+where "DSTERM" = 'COMPLETED' and 
+("STUDYID",reverse(SUBSTRING(reverse("USUBJID"),5,3)),"USUBJID","DSSTDTC") in
+(select "STUDYID",reverse(SUBSTRING(reverse("USUBJID"),5,3)),"USUBJID",max("DSSTDTC")
+from kar004_sdtm."DS" group by 1,2,3  ) 
 
 
 union all 
@@ -110,11 +112,13 @@ ds."USUBJID"::text AS usubjid,
 4.1::NUMERIC AS dsseq, 
 'Completion'::text AS dscat,
 'Withdrawn'::text AS dsterm,   
-max(ds."DSSTDTC")::DATE AS dsstdtc,
+ds."DSSTDTC"::DATE AS dsstdtc,
 ds."DSDECOD"::text AS dsscat 
 from kar004_sdtm."DS" ds
-where "DSTERM" not in ('INFORMED CONSENT OBTAINED', 'CONSENT WITHDRAWN', 'SCREEN FAILURE', 'COMPLETED','RANDOMIZED')
-group by 1,2,3,8
+where "DSTERM" not in ('INFORMED CONSENT OBTAINED', 'SCREEN FAILURE', 'COMPLETED','RANDOMIZED')
+and ("STUDYID",reverse(SUBSTRING(reverse("USUBJID"),5,3)),"USUBJID","DSSTDTC") in
+(select "STUDYID",reverse(SUBSTRING(reverse("USUBJID"),5,3)),"USUBJID",max("DSSTDTC")
+from kar004_sdtm."DS" group by 1,2,3  )
 
 )
 
