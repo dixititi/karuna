@@ -5,12 +5,26 @@ Notes: Standard mapping to CCDM AE table
 
 WITH included_subjects AS (
     SELECT DISTINCT studyid, siteid, usubjid from subject),
+	
+	
+	       ae_nulldate AS (select a."USUBJID" as USUBJID , a."STUDYID" as STUDYID,reverse(SUBSTRING(reverse(a."USUBJID"),5,3)) as siteid,
+max(s."SVENDTC") as end_date from 
+(select * from kar004_sdtm."AE"  where "AEENDTC"='' ) a 
+ join 
+kar004_sdtm."SV" s
+on a."STUDYID" = s."STUDYID" 
+and reverse(SUBSTRING(reverse(a."USUBJID"),5,3)) = reverse(SUBSTRING(reverse(s."USUBJID"),5,3))
+and a."USUBJID" = s."USUBJID"
+group by 1,2,3),
 
 
-    ae_data AS ( select studyid, siteid, usubjid, aeterm, aeverbatim, aebodsys, aestdtc, aeendtc, 
-                        aesev, aeser, aerelnst, aesttm, aeentm, aellt, aelltcd, aeptcd, aehlt, aehltcd, 
-                        aehlgt, aehlgtcd, aebdsycd, aesoc, aesoccd, aeacn,
-                        ROW_NUMBER () OVER (PARTITION BY studyid, siteid, usubjid) as aeseq from
+			ae_data AS ( select ae_sub.studyid, ae_sub.siteid, ae_sub.usubjid, ae_sub.aeterm, ae_sub.aeverbatim, ae_sub.aebodsys, ae_sub.aestdtc, 
+case when ae_sub.aeendtc is null then concat(an.end_date,' 00:00:00') else ae_sub.aeendtc end as aeendtc, 
+                        ae_sub.aesev, ae_sub.aeser, ae_sub.aerelnst, 
+                        ae_sub.aesttm, ae_sub.aeentm, ae_sub.aellt, ae_sub.aelltcd, ae_sub.aeptcd, ae_sub.aehlt, 
+                        ae_sub.aehltcd, ae_sub.aehlgt, ae_sub.aehlgtcd, ae_sub.aebdsycd, ae_sub.aesoc, 
+                        ae_sub.aesoccd, ae_sub.aeacn,
+                        ROW_NUMBER () OVER (PARTITION BY ae_sub.studyid, ae_sub.siteid, ae_sub.usubjid) as aeseq from
                    (SELECT "STUDYID"::text AS studyid,
                        reverse(SUBSTRING(reverse("USUBJID"),5,3))::text AS siteid,
                        ae."USUBJID"::text AS usubjid,
@@ -50,7 +64,10 @@ WITH included_subjects AS (
 					  					   
 					   CASE WHEN lower("AEACN")='other' THEN ae."AEACN"||ae."AEACNOTH" 					     
 					   else ae."AEACN" END::text AS aeacn
-		        FROM kar004_sdtm."AE" ae ) ae_sub
+		        FROM kar004_sdtm."AE" ae) ae_sub 
+		         left join ae_nulldate  an
+		        on ae_sub.studyid = an.STUDYID
+		        and ae_sub.usubjid = an.USUBJID
   )
 
 SELECT
@@ -86,4 +103,3 @@ SELECT
         /*KEY , now()::timestamp without time zone AS comprehend_update_time KEY*/
 FROM ae_data ae
 JOIN included_subjects s ON (ae.studyid = s.studyid AND ae.siteid = s.siteid AND ae.usubjid = s.usubjid);
-
