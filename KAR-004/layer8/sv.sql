@@ -16,7 +16,22 @@ WITH included_subjects AS (
                         min("SVSTDTC")::date AS svstdtc,
                         max("SVENDTC")::date AS svendtc
                         FROM kar004_sdtm."SV" 
-						group by 1,2,3,4,5,6),
+						group by 1,2,3,4,5,6
+						
+						union
+						
+						 SELECT  studyid::text AS studyid,
+                        reverse(substring(reverse(usubjid),5,3))::text AS siteid,
+                        usubjid ::text AS usubjid, 
+                        '99'::numeric AS visitnum,
+                        visit::text AS visit,
+                        1::int AS visitseq, /* defaulted to 1 - deprecated */
+                        min(dvstdtc)::date AS svstdtc,
+                        max(dvendtc)::date AS svendtc
+                        FROM cqs.dv                          
+						group by 1,2,3,4,5,6
+						
+						),
 	
 	formdata_visits AS (SELECT DISTINCT fd.studyid,
                                     fd.siteid,
@@ -66,4 +81,3 @@ SELECT
         /*KEY , now()::timestamp with time zone AS comprehend_update_time KEY*/
 FROM all_visits sv
 JOIN included_subjects s ON (sv.studyid = s.studyid AND sv.siteid = s.siteid AND sv.usubjid = s.usubjid);
-
